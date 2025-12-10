@@ -89,7 +89,7 @@ find_issue () {
 	else
 		echo "Error: no armel-rootfs-* file"
 		echo "Make sure your in the right dir..."
-		exit
+		exit 1
 	fi
 
 	unset has_uenvtxt
@@ -138,7 +138,7 @@ detect_software () {
 		echo "Fedora: yum install dosfstools dosfstools git wget"
 		echo "Gentoo: emerge dosfstools git wget"
 		echo ""
-		exit
+		exit 1
 	fi
 
 	unset wget_version
@@ -234,14 +234,14 @@ dl_bootloader () {
 
 	if [ ! -f ${TEMPDIR}/dl/${conf_bl_listfile} ] ; then
 		echo "error: can't connect to rcn-ee.net, retry in a few minutes..."
-		exit
+		exit 1
 	fi
 
 	boot_version=$(cat ${TEMPDIR}/dl/${conf_bl_listfile} | grep "VERSION:" | awk -F":" '{print $2}')
 	if [ "x${boot_version}" != "x${minimal_boot}" ] ; then
 		echo "Error: This script is out of date and unsupported..."
 		echo "Please Visit: https://github.com/RobertCNelson to find updates..."
-		exit
+		exit 1
 	fi
 
 	ABI="ABI2"
@@ -349,7 +349,7 @@ drive_error_ro () {
 	echo "-----------------------------"
 	echo "Script gave up..."
 
-	exit
+	exit 1
 }
 
 sfdisk_partition_layout () {
@@ -479,7 +479,7 @@ dd_spl_uboot_boot () {
 format_partition_error () {
 	echo "LC_ALL=C ${mkfs} ${mkfs_partition} ${mkfs_label}"
 	echo "Failure: formating partition"
-	exit
+	exit 1
 }
 
 format_partition_try2 () {
@@ -650,7 +650,7 @@ create_partitions () {
 		losetup -a
 		echo "sudo kpartx -d /dev/loopX ; sudo losetup -d /dev/loopX"
 		echo "-----------------------------"
-		exit
+		exit 1
 	fi
 
 	losetup ${media_loop} "${media}"
@@ -663,7 +663,7 @@ create_partitions () {
 	else
 		ls -lh /dev/mapper/
 		echo "Error: not sure what to do (new feature)."
-		exit
+		exit 1
 	fi
 
 	if [ "x${media_boot_partition}" = "x${media_rootfs_partition}" ] ; then
@@ -705,7 +705,7 @@ populate_boot () {
 			echo "Unable to mount ${media_prefix}${media_boot_partition} at ${TEMPDIR}/disk to complete populating Boot Partition"
 			echo "Please retry running the script, sometimes rebooting your system helps."
 			echo "-----------------------------"
-			exit
+			exit 1
 		fi
 	fi
 
@@ -794,7 +794,7 @@ kernel_select () {
 		echo "debug: kernel_select: found: [${select_kernel}]"
 	else
 		echo "Error: no installed kernel"
-		exit
+		exit 1
 	fi
 }
 
@@ -822,7 +822,7 @@ populate_rootfs () {
 			echo "Unable to mount ${media_prefix}${media_rootfs_partition} at ${TEMPDIR}/disk to complete populating rootfs Partition"
 			echo "Please retry running the script, sometimes rebooting your system helps."
 			echo "-----------------------------"
-			exit
+			exit 1
 		fi
 	fi
 
@@ -846,7 +846,7 @@ populate_rootfs () {
 				echo "Unable to mount ${media_prefix}${media_boot_partition} at ${TEMPDIR}/disk/boot/firmware to complete populating rootfs Partition"
 				echo "Please retry running the script, sometimes rebooting your system helps."
 				echo "-----------------------------"
-				exit
+				exit 1
 			fi
 		fi
 	fi
@@ -1534,7 +1534,7 @@ process_dtb_conf () {
 		;;
 	*)
 		echo "Error: [conf_boot_fstype] not recognized, stopping..."
-		exit
+		exit 1
 		;;
 	esac
 
@@ -1574,7 +1574,7 @@ check_dtb_board () {
 		__EOF__
 		cat "${DIR}"/hwpack/*.conf | grep supported
 		echo "-----------------------------"
-		exit
+		exit 1
 	fi
 }
 
@@ -1594,7 +1594,7 @@ usage () {
 			        -h --help
 
 			__EOF__
-	exit
+	exit 1
 }
 
 checkparm () {
@@ -1930,7 +1930,7 @@ fi
 if ! is_valid_rootfs_type ${ROOTFS_TYPE} ; then
 	echo "ERROR: ${ROOTFS_TYPE} is not a valid root filesystem type"
 	echo "Valid types: ${VALID_ROOTFS_TYPES}"
-	exit
+	exit 1
 fi
 
 find_issue
