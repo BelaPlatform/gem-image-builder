@@ -168,6 +168,7 @@ chroot_mount_run () {
 	fi
 }
 
+cache_dir_mountpoint="${tempdir}/var/cache/apt/archives"
 chroot_mount () {
 	if [ "$(mount | grep ${tempdir}/sys | awk '{print $3}')" != "${tempdir}/sys" ] ; then
 		sudo mount -t sysfs sysfs "${tempdir}/sys"
@@ -183,6 +184,12 @@ chroot_mount () {
 
 	if [ "$(mount | grep ${tempdir}/dev/pts | awk '{print $3}')" != "${tempdir}/dev/pts" ] ; then
 		sudo mount -t devpts devpts "${tempdir}/dev/pts"
+	fi
+
+	mkdir -p "${cache_dir_mountpoint}"
+	if [ "x${deb_cache}" != "x" -a "$(mount | grep ${cache_dir_mountpoint} | awk '{print $3}')" != "${cache_dir_mountpoint}" ] ; then
+		mkdir -p "${deb_cache}"
+		sudo mount --bind "${deb_cache}" "${cache_dir_mountpoint}"
 	fi
 }
 
@@ -229,6 +236,10 @@ chroot_umount () {
 			echo "Log: ERROR: umount [${tempdir}/run] failed..."
 			exit 1
 		fi
+	fi
+
+	if [ "x${deb_cache}" != "x" ]; then
+		sudo umount ${cache_dir_mountpoint} || true
 	fi
 }
 
@@ -1431,7 +1442,11 @@ cat > "${DIR}/cleanup_script.sh" <<-__EOF__
 		if [ -f /etc/apt/apt.conf ] ; then
 			rm -rf /etc/apt/apt.conf || true
 		fi
-		apt-get clean
+		mountpoint /var/cache/apt/archives && {
+			# we have deb_cache set and we want to preserve it
+		} || {
+			apt-get clean
+		}
 		rm -rf /var/lib/apt/lists/*
 
 		rm -rf /root/.cache/pip

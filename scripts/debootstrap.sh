@@ -129,6 +129,11 @@ check_defines () {
 		esac
 	fi
 	mirror="http://${apt_proxy}${deb_mirror}"
+
+	if [ "x${deb_cache}" != x ] ; then
+		mkdir -p "${deb_cache}"
+		options="${options} --cache-dir=${deb_cache}"
+	fi
 }
 
 report_size () {
