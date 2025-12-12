@@ -1429,17 +1429,21 @@ populate_rootfs () {
 					cp -v ${TEMPDIR}/disk/boot/${extlinux_compressed_kernel}-${select_kernel} ${TEMPDIR}/disk/boot/firmware/Image.gz
 				fi
 			fi
-			if [ ! "x${extlinux_dtb_vendor}" = "x" ] ; then
-				if [ ! "x${extlinux_dtb_fam}" = "x" ] ; then
-					mkdir -p ${TEMPDIR}/disk/boot/firmware/${extlinux_dtb_vendor}/ || true
-					#cp ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/${extlinux_dtb_fam}*dtb ${TEMPDIR}/disk/boot/firmware/ || true
-					cp ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/${extlinux_dtb_fam}*dtb ${TEMPDIR}/disk/boot/firmware/${extlinux_dtb_vendor}/ || true
-					mkdir -p ${TEMPDIR}/disk/boot/firmware/overlays/ || true
-					cp ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/*.dtbo ${TEMPDIR}/disk/boot/firmware/overlays/ || true
-					if [ -d ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/overlays/ ] ; then
-						cp ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/overlays/*.dtbo ${TEMPDIR}/disk/boot/firmware/overlays/ || true
-					fi
+			dtb_dest="${TEMPDIR}/disk/boot/firmware/${extlinux_dtb_vendor}/"
+			dtbo_dest="${TEMPDIR}/disk/boot/firmware/overlays/"
+			mkdir -p "${dtb_dest}" "${dtbo_dest}"
+			if [ ! "x${extlinux_dtb_fam}" = "x" ] && [ ! "x${extlinux_dtb_vendor}" = "x" ] ; then
+				cp ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/${extlinux_dtb_fam}*dtb "${dtb_dest}" || true
+				cp ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/*.dtbo "${dtbo_dest}"|| true
+				if [ -d ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/overlays/ ] ; then
+					cp ${TEMPDIR}/disk/usr/lib/linux-image-${select_kernel}/${extlinux_dtb_vendor}/overlays/*.dtbo "${dtbo_dest}"|| true
 				fi
+			fi
+			if [ ! "x${conf_dtb_source}" = "x" ] ; then
+				cp "${TEMPDIR}/disk/${conf_dtb_source}"/*.dtb "${dtb_dest}"
+			fi
+			if [ ! "x${conf_dtbo_source}" = "x" ] ; then
+				cp "${TEMPDIR}/disk/${conf_dtbo_source}"/*.dtbo "${dtbo_dest}"
 			fi
 			cp -v ${TEMPDIR}/disk/boot/initrd.img-${select_kernel} ${TEMPDIR}/disk/boot/firmware/initrd.img
 			firmware_sysconf="enable"
