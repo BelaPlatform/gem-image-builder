@@ -67,8 +67,8 @@ source .project
 if [ -d ./deploy/${export_filename}/ ] ; then
 	cd ./deploy/${export_filename}/
 
-	echo "sudo ./setup_sdcard.sh --img-${filesize} pocketbeagle2-${export_filename} --dtb pocketbeagle2-swap"
-	sudo ./setup_sdcard.sh --img-${filesize} pocketbeagle2-${export_filename} --dtb pocketbeagle2-swap
+	echo "sudo ./setup_sdcard.sh --img-${filesize} pocketbeagle2-${export_filename} --dtb bela-pocketbeagle2"
+	sudo ./setup_sdcard.sh --img-${filesize} pocketbeagle2-${export_filename} --dtb bela-pocketbeagle2
 	mv ./*.img ../
 
 	cd ../
