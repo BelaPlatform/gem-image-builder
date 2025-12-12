@@ -189,15 +189,21 @@ bash -x setup_22.x # includes apt-get update
 # apt-get update not needed because it's already performed by node's setup_*.x above
 apt-get install -y \
 	bela-all \
+	bela-utils \
 	nodejs \
+	apt-offline=1.8.6-bela \
 	# this line left blank
 
-#fixup for libevl
-echo "/usr/evl/lib" > /etc/ld.so.conf.d/evl.conf
+systemctl enable bela-usb-gadgets
+
+#fixups for libevl
+echo "/usr/evl/lib/aarch64-linux-gnu/" > /etc/ld.so.conf.d/evl.conf
+ln -s /usr/evl/bin/evl /usr/local/bin
 
 # use clang 15 because 14 is buggy
 sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100
 sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-15 100
+sudo update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-15 100
 
 # dependencies for the IDE
 # don't know why we need to resintall libc6-dev, but without it the build of node-pty fails
@@ -230,13 +236,14 @@ make -j${CORES}
 make -j${CORES} prudis
 cp -v prudis prudebug /usr/local/bin
 
+
 cd /opt/source/dtb-6.12-Beagle
 git remote add bela https://github.com/BelaPlatform/BeagleBoard-DeviceTrees.git
 git fetch bela v6.12.x-Beagle
 git checkout v6.12.x-Beagle
 git reset --hard bela/v6.12.x-Beagle
 # build overlays
-./build_n_install.sh # despite the name it only builds when in chroot
+./build_n_install.sh # despite the name, it doesn't install when in chroot
 
 ### System customisation
 
@@ -263,9 +270,13 @@ echo "~~~~ building Bela ~~~~"
 cd /root/Bela
 mkdir -p projects
 cp -rv templates/basic projects/
-#make -j${CORES} all PROJECT=basic AT=
-#make -j${CORES} lib
-#make -j${CORES} -f Makefile.libraries all
+export BELA_RT_BACKEND=evl
+export IS_AM62_PB2=1
+make -C resources/tools/bela-extract-dependencies bela-extract-dependencies install || true
+make -j${CORES} all PROJECT=basic AT= || true
+make -j${CORES} lib || true
+make -C resources/tools/board_detect board_detect install || true
+make -C resources/tools/bela-cape-btn all install || true
 #note : doxygen comes prebuilt
 
 #setup repo for future operation
@@ -339,10 +350,6 @@ cat << 'HEREDOC' > ~/.gitconfig
 HEREDOC
 
 ### system configuration
-
-# swap ip addresses of usb networks and add dhcp in addition to static ip
-sed -i "s:\(Address=192\.168\.\)7\(\.2/24\):\16\2\nDHCP=yes:" /etc/systemd/network/usb1.network
-sed -i "s:\(Address=192\.168\.\)6\(\.2/24\):\17\2\nDHCP=yes:" /etc/systemd/network/usb0.network
 
 cat << 'HEREDOC' > /etc/modules-load.d/bela.conf
 # loading drivers needed by bela on boot
