@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-
+set -x
 OPT=$(getent passwd voodoo && echo true || echo false)
 config=bela.io-debian-bookworm-iot-v6.12-ti-arm64-k3-am62
 filesize=8gb
