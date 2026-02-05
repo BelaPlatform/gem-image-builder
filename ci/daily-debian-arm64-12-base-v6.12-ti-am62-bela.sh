@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#export apt_proxy=192.168.1.10:3142/
 set -e
 
 OPT=$(getent passwd voodoo && echo true || echo false)
