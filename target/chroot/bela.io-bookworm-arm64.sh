@@ -393,4 +393,4 @@ arm64 image for Bela Gem on PocketBeagle 2
 
 HEREDOC
 
-printf "Bela image, v1.0.0, `date "+%e %B %Y"`\n\n" | tee -a /etc/motd
+printf "Bela image, v1.0.1, `date "+%e %B %Y"`\n\n" | tee -a /etc/motd
